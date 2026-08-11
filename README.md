@@ -1,4 +1,4 @@
-# k8s-gitops-devsecops-stack
+# K8S-GitOps-DevSecOps-Stack
 
 A production-style, GitOps-driven Kubernetes deployment pipeline — built to demonstrate containerization, automated CI/CD, observability, and real operational debugging on a local Kind cluster.
 
