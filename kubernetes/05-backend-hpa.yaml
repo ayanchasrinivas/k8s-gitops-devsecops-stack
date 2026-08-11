@@ -1,0 +1,23 @@
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscalar
+metadata:
+  name: backend-hpa
+  namespace: assignment-demo
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: backend
+  minReplicas: 3
+  maxReplicas: 5
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 60
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 60

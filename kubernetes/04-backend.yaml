@@ -1,0 +1,60 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+  namespace: assignment-demo
+spec:
+  replicas: 2
+  selector:
+    matchLables:
+      app: backend
+template:
+  metadata:
+    labels:
+      app: backend
+  spec:
+    containers:
+      - name: backend
+        image: ayanchasrinivas/backend:latest
+        imagePullPolicy: Always
+        ports:
+          - containerPort: 8000
+        envFrom:
+          - configMapRef:
+              name: backend-config
+          - secretRef:
+              name: postgres-secret
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 300m
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 8000
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          failureThreshold: 3
+        livesnessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          failureThreshold: 3
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend
+  namespace: assignment-demo
+spec:
+  selector:
+    app: backend
+  ports:
+    - port: 8000
+      targetPort: 8000
+...
