@@ -1,4 +1,9 @@
 ---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: argocd
+---
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
@@ -9,8 +14,8 @@ spec:
   source:
     repoURL: https://github.com/ayanchasrinivas/k8s-gitops-devsecops-stack.git
     targetRevision: main
-    path: k8s
-  destionation:
+    path: kubernetes
+  destination:
     server: https://kubernetes.default.svc
     namespace: assignment-demo
   syncPolicy:
@@ -19,3 +24,4 @@ spec:
       selfHeal: true
     syncOptions:
       - CreateNamespace=true
+...
