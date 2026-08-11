@@ -8,7 +8,7 @@ metadata:
     release: kps
 spec:
   namespaceSelector:
-    matchName:
+    matchNames:
       - assignment-demo
   selector:
     matchLabels:

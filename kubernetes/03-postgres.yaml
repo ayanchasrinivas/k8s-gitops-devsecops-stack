@@ -20,7 +20,7 @@ spec:
   strategy:
     type: Recreate
   selector:
-    matchLables:
+    matchLabels:
       app: postgres
   template:
     metadata:
@@ -28,7 +28,7 @@ spec:
         app: postgres
     spec:
       containers:
-        - name:  postgres
+        - name: postgres
           image: postgres:16-alpine
           ports:
             - containerPort: 5432
@@ -54,7 +54,7 @@ spec:
             periodSeconds: 10
           volumeMounts:
             - name: pgdata
-              mountpath: /var/lib/postgresql/data
+              mountPath: /var/lib/postgresql/data
               subPath: pgdata
       volumes:
         - name: pgdata

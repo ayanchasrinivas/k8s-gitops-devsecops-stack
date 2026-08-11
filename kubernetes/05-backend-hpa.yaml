@@ -1,6 +1,6 @@
 ---
 apiVersion: autoscaling/v2
-kind: HorizontalPodAutoscalar
+kind: HorizontalPodAutoscaler
 metadata:
   name: backend-hpa
   namespace: assignment-demo

@@ -11,6 +11,12 @@ from pydantic import BaseModel
 from prometheus_fastapi_instrumentator import Instrumentator
 from pythonjsonlogger import jsonlogger
 
+DB_HOST = os.getenv("DB_HOST", "postgres")
+DB_PORT = os.getenv("DB_PORT", "5432")
+DB_NAME = os.getenv("POSTGRES_DB", "assignmentdb")
+DB_USER = os.getenv("POSTGRES_USER", "appuser")
+DB_PASSWORD = os.getenv("POSTGRES_PASSWORD", "AssignmentPassword**009")
+
 # Structured JSON logs to stdout. Promtail (DaemonSet on each node) tails
 # container stdout and ships it to Loki - this format is what makes those
 # logs actually filterable/queryable in Grafana/LogQL instead of being
@@ -65,11 +71,11 @@ async def log_requests(request: Request, call_next):
 # this on a schedule; nothing here pushes metrics anywhere.
 Instrumentator().instrument(app).expose(app, endpoint="/metrics", include_in_schema=False)
 
-DB_HOST = os.getenv("DB_HOST", "postgres")
-DB_PORT = os.getenv("DB_PORT", "5432")
-DB_NAME = os.getenv("DB_NAME", "assignmentdb")
-DB_USER = os.getenv("DB_USER", "appuser")
-DB_PASSWORD = os.getenv("DB_PASSWORD", "changeme")
+# DB_HOST = os.getenv("DB_HOST", "postgres")
+# DB_PORT = os.getenv("DB_PORT", "5432")
+# DB_NAME = os.getenv("DB_NAME", "assignmentdb")
+# DB_USER = os.getenv("DB_USER", "appuser")
+# DB_PASSWORD = os.getenv("DB_PASSWORD", "changeme")
 
 READY = {"db": False}
 
@@ -137,7 +143,6 @@ def health():
 
 @app.get("/ready")
 def ready():
-    """Readiness: is this pod actually able to serve real traffic (DB reachable)."""
     try:
         with get_conn() as conn:
             with conn.cursor() as cur:
