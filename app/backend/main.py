@@ -11,12 +11,6 @@ from pydantic import BaseModel
 from prometheus_fastapi_instrumentator import Instrumentator
 from pythonjsonlogger import jsonlogger
 
-DB_HOST = os.getenv("DB_HOST", "postgres")
-DB_PORT = os.getenv("DB_PORT", "5432")
-DB_NAME = os.getenv("POSTGRES_DB", "assignmentdb")
-DB_USER = os.getenv("POSTGRES_USER", "appuser")
-DB_PASSWORD = os.getenv("POSTGRES_PASSWORD", "AssignmentPassword**009")
-
 # Structured JSON logs to stdout. Promtail (DaemonSet on each node) tails
 # container stdout and ships it to Loki - this format is what makes those
 # logs actually filterable/queryable in Grafana/LogQL instead of being
@@ -71,11 +65,16 @@ async def log_requests(request: Request, call_next):
 # this on a schedule; nothing here pushes metrics anywhere.
 Instrumentator().instrument(app).expose(app, endpoint="/metrics", include_in_schema=False)
 
-# DB_HOST = os.getenv("DB_HOST", "postgres")
-# DB_PORT = os.getenv("DB_PORT", "5432")
-# DB_NAME = os.getenv("DB_NAME", "assignmentdb")
-# DB_USER = os.getenv("DB_USER", "appuser")
-# DB_PASSWORD = os.getenv("DB_PASSWORD", "changeme")
+DB_HOST = os.getenv("DB_HOST", "postgres")
+DB_PORT = os.getenv("DB_PORT", "5432")
+# Deliberately reads the SAME env var names the Postgres container itself
+# uses (POSTGRES_USER / POSTGRES_PASSWORD / POSTGRES_DB), since both come
+# from the same Secret (k8s/02-secret.yaml) via envFrom. One source of
+# truth - no separate DB_USER/DB_PASSWORD naming to drift out of sync with
+# the Secret if the password ever changes.
+DB_NAME = os.getenv("POSTGRES_DB", "assignmentdb")
+DB_USER = os.getenv("POSTGRES_USER", "appuser")
+DB_PASSWORD = os.getenv("POSTGRES_PASSWORD", "changeme")
 
 READY = {"db": False}
 
@@ -143,6 +142,7 @@ def health():
 
 @app.get("/ready")
 def ready():
+    """Readiness: is this pod actually able to serve real traffic (DB reachable)."""
     try:
         with get_conn() as conn:
             with conn.cursor() as cur:
@@ -152,7 +152,7 @@ def ready():
         raise HTTPException(status_code=503, detail=f"not ready: {exc}")
 
 
-@app.get("/api/items")
+@app.get("/items")
 def list_items():
     try:
         with get_conn() as conn:
@@ -163,7 +163,7 @@ def list_items():
         raise HTTPException(status_code=503, detail=f"db unavailable: {exc}")
 
 
-@app.post("/api/items")
+@app.post("/items")
 def create_item(item: Item):
     try:
         with get_conn() as conn:
@@ -179,7 +179,7 @@ def create_item(item: Item):
         raise HTTPException(status_code=503, detail=f"db unavailable: {exc}")
 
 
-@app.delete("/api/items/{item_id}")
+@app.delete("/items/{item_id}")
 def delete_item(item_id: int):
     try:
         with get_conn() as conn:
@@ -191,7 +191,7 @@ def delete_item(item_id: int):
         raise HTTPException(status_code=503, detail=f"db unavailable: {exc}")
 
 
-@app.get("/api/info")
+@app.get("/info")
 def info():
     """Handy during the video: shows which pod served the request."""
     return {
